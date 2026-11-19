@@ -1,0 +1,27 @@
+name: Docker Continuous Deployment
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t csa10-docker-cd:latest .
+
+      - name: Execute Container Smoke Test
+        run: |
+          docker run -d -p 8080:80 --name test-container csa10-docker-cd:latest
+          sleep 3
+          curl -I http://localhost:8080 | grep "200 OK"
+          echo "Automated CD Verification Passed for Ajith Kumar R (192321144)"
